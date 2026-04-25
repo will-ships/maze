@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAZE RUNNERS</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════ MENU SCREEN ══════════════════════════ -->
+  <div id="screen-menu" class="screen active">
+    <div class="menu-bg"></div>
+    <div class="menu-box">
+      <h1 class="logo">MAZE<br/><span>RUNNERS</span></h1>
+      <p class="tagline">Hunt or be hunted. Find the exit — or be the last one standing.</p>
+
+      <div class="field-row">
+        <input id="input-name" type="text" maxlength="16" placeholder="Your name…" autocomplete="off" />
+      </div>
+
+      <button class="btn btn-primary" id="btn-create">⚡ Create Room</button>
+
+      <div class="divider">— or join —</div>
+
+      <div class="field-row join-row">
+        <input id="input-code" type="text" maxlength="4" placeholder="ROOM" autocomplete="off" />
+        <button class="btn btn-secondary" id="btn-join">Join</button>
+      </div>
+
+      <p id="menu-error" class="error-msg hidden"></p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ LOBBY SCREEN ═════════════════════════ -->
+  <div id="screen-lobby" class="screen">
+    <div class="lobby-wrap">
+      <div class="room-code-box">
+        <span class="room-label">Room Code</span>
+        <span id="lobby-code" class="room-code">····</span>
+        <button class="btn-copy" id="btn-copy-code" title="Copy code">⎘</button>
+      </div>
+
+      <h2>Pick your fighter</h2>
+
+      <div class="char-grid">
+        <!-- Scout -->
+        <div class="char-card" data-char="scout">
+          <div class="char-avatar scout-av">🏃</div>
+          <div class="char-name">Scout</div>
+          <div class="char-stats">❤️ 100 HP &nbsp;|&nbsp; ⚡ Fast</div>
+          <div class="char-ability">
+            <span class="ab-key">F</span>
+            <strong>Sprint</strong> — 2× speed for 3 s
+          </div>
+          <div class="char-taken hidden">TAKEN</div>
+        </div>
+
+        <!-- Tank -->
+        <div class="char-card" data-char="tank">
+          <div class="char-avatar tank-av">🛡️</div>
+          <div class="char-name">Tank</div>
+          <div class="char-stats">❤️ 150 HP &nbsp;|&nbsp; 🐢 Slow</div>
+          <div class="char-ability">
+            <span class="ab-key">F</span>
+            <strong>Shield</strong> — invincible 2 s
+          </div>
+          <div class="char-taken hidden">TAKEN</div>
+        </div>
+
+        <!-- Trickster -->
+        <div class="char-card" data-char="trickster">
+          <div class="char-avatar trickster-av">👻</div>
+          <div class="char-name">Trickster</div>
+          <div class="char-stats">❤️ 100 HP &nbsp;|&nbsp; 🌀 Medium</div>
+          <div class="char-ability">
+            <span class="ab-key">F</span>
+            <strong>Cloak</strong> — invisible 3 s
+          </div>
+          <div class="char-taken hidden">TAKEN</div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:24px">Players</h3>
+      <ul id="player-list" class="player-list"></ul>
+
+      <div class="lobby-hint" id="lobby-hint">Waiting for host to start…</div>
+      <button class="btn btn-primary hidden" id="btn-start">▶ Start Game</button>
+
+      <p id="lobby-error" class="error-msg hidden"></p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ GAME SCREEN ═══════════════════════════ -->
+  <div id="screen-game" class="screen">
+
+    <!-- Three.js renders here -->
+    <div id="game-canvas"></div>
+
+    <!-- Pointer-lock overlay -->
+    <div id="lock-overlay" class="lock-overlay">
+      <div class="lock-box">
+        <div class="lock-icon">🎮</div>
+        <h2>Click to Play</h2>
+        <p>WASD — Move &nbsp; Mouse — Look &nbsp; LMB — Shoot<br/>
+           E — Pick up / Place trap &nbsp; F — Ability &nbsp; Esc — Pause</p>
+      </div>
+    </div>
+
+    <!-- HUD ─────────────────────────────────────────────────────────────── -->
+
+    <!-- Health -->
+    <div id="hud-health" class="hud hud-tl">
+      <div class="hp-label">HP</div>
+      <div class="hp-bar-wrap"><div id="hp-bar" class="hp-bar"></div></div>
+      <div id="hp-num" class="hp-num">100</div>
+    </div>
+
+    <!-- Inventory (bottom-right) -->
+    <div id="hud-inv" class="hud hud-br">
+      <div id="inv-ammo" class="inv-item">
+        <span class="inv-icon">🔫</span><span id="ammo-count">0</span>
+      </div>
+      <div id="inv-trap" class="inv-item inv-hidden">
+        <span class="inv-icon">💣</span><span>Trap ready</span>
+      </div>
+    </div>
+
+    <!-- Ability (bottom-center) -->
+    <div id="hud-ability" class="hud hud-bc">
+      <canvas id="ability-canvas" width="64" height="64"></canvas>
+      <div id="ability-label">F</div>
+    </div>
+
+    <!-- Exit timer (top-center) -->
+    <div id="hud-timer" class="hud hud-tc">
+      <span id="timer-text">Exit opens in <b id="timer-val">45</b>s</span>
+    </div>
+
+    <!-- Minimap (top-right) -->
+    <canvas id="minimap" width="150" height="150" class="minimap"></canvas>
+
+    <!-- Crosshair -->
+    <div class="crosshair">
+      <div class="ch-h"></div><div class="ch-v"></div>
+    </div>
+
+    <!-- Kill feed -->
+    <div id="killfeed" class="killfeed"></div>
+
+    <!-- Pickup prompt -->
+    <div id="pickup-prompt" class="pickup-prompt hidden">Press <kbd>E</kbd> to pick up</div>
+
+    <!-- Message flash -->
+    <div id="msg-flash" class="msg-flash hidden"></div>
+
+    <!-- Damage overlay -->
+    <div id="damage-flash" class="damage-flash"></div>
+
+    <!-- Shield flash -->
+    <div id="shield-flash" class="shield-flash"></div>
+
+    <!-- Death overlay -->
+    <div id="death-overlay" class="death-overlay hidden">
+      <h2>YOU DIED</h2>
+      <p>Spectating…</p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════ GAME OVER SCREEN ═════════════════════════ -->
+  <div id="screen-gameover" class="screen">
+    <div class="gameover-box">
+      <div id="go-banner" class="go-banner">GAME OVER</div>
+      <div id="go-winner" class="go-winner"></div>
+      <div id="go-reason" class="go-reason"></div>
+      <table id="go-scores" class="go-scores">
+        <thead><tr><th>Player</th><th>Character</th><th>Kills</th><th>Status</th></tr></thead>
+        <tbody id="go-tbody"></tbody>
+      </table>
+      <button class="btn btn-primary" id="btn-again">Play Again</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ SCRIPTS ═══════════════════════════════ -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three":          "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js",
+      "three/addons/":  "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="/game.js"></script>
+</body>
+</html>
