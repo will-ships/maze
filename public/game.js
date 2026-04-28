@@ -419,7 +419,7 @@ function updateLobbyUI(state) {
   document.getElementById('diff-desc').textContent = DIFF_DESC[diff];
 
   // Host start button
-  const allReady = state.players.length>=2 && state.players.every(p=>p.character);
+  const allReady = state.players.length>=1 && state.players.every(p=>p.character);
   if (isHost) {
     startBtn.classList.remove('hidden');
     startBtn.disabled = !allReady;

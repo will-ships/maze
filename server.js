@@ -254,7 +254,7 @@ io.on('connection', socket => {
     const r = room();
     if (!r || r.host !== socket.id) return;
     const pList = Object.values(r.players);
-    if (pList.length < 2)              return socket.emit('join_error', 'Need at least 2 players');
+    if (pList.length < 1)              return socket.emit('join_error', 'No players in room');
     if (pList.some(p => !p.character)) return socket.emit('join_error', 'All players must pick a character');
 
     // Assign spawn positions (all clustered at top-left)
